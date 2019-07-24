@@ -66,8 +66,6 @@ Optional arguments:
 - If `modules` is nonempty, only warnings for methods defined in one of the modules specified will be printed.
 """
 macro warnings(ex, args...)
-  @assert ex.head === :call "`@warnings` should be called with a function call."
-
   fcall = ex.args[1]
   fargs = ex.args[2:end]
   quote
