@@ -18,14 +18,12 @@ DynamicCall(f, a...) = DynamicCall{typeof(f),typeof(a)}(f, a...)
 
 argtypes(c::DynamicCall) = Base.typesof(c.a...)
 types(c::DynamicCall) = (typeof(c.f), argtypes(c).parameters...)
-method(c::DynamicCall) = which(c.f, argtypes(c))
-method_expr(c::DynamicCall) = method_expr(c.f, argtypes(c))
-
-function code(c::DynamicCall; optimize = false)
+method(c::DynamicCall)::Method = which(c.f, argtypes(c))
+method_expr(c::DynamicCall)::Expr = method_expr(c.f, argtypes(c))
+code(c::DynamicCall; optimize = false)::Pair{Core.CodeInfo, Any} = begin
   codeinfo = code_typed(c.f, argtypes(c), optimize = optimize)
   @assert length(codeinfo) == 1
-  codeinfo = codeinfo[1]
-  return codeinfo
+  codeinfo[1]
 end
 
 # struct StaticCall <: Call
