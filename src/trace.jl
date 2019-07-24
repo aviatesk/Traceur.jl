@@ -27,8 +27,7 @@ should_analyse(tra::Trace, C::DynamicCall) = begin
   f = C.f
   T = dispatch_type(f, C.a)
 
-  !(f ∈ ignored_functions || T ∈ tra.seen || isprimitive(f) ||
-    method(C) ∈ ignored_methods || method(C).module ∈ (Core, Core.Compiler))
+  f ∉ ignored_functions && T ∉ tra.seen && !isprimitive(f) && method(C) ∉ ignored_methods && method(C).module ∉ (Core, Core.Compiler)
 end
 
 @hook ctx::TraceurCtx (fcall::Any)(fargs...) = begin
