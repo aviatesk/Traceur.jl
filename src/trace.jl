@@ -44,7 +44,7 @@ trace(w, fcall, fargs...; kwargs...) = begin
   @overdub TraceurCtx(Trace(w; kwargs...)) fcall(fargs...)
 end
 
-function warntrace(fcall, fargs...; modules=[], kwargs...)
+function tracewarns(fcall, fargs...; modules=[], kwargs...)
   trace(warning_printer(modules), fcall, fargs...; kwargs...)
 end
 
@@ -81,6 +81,6 @@ macro trace(ex, args...)
   fcall = ex.args[1]
   fargs = ex.args[2:end]
   quote
-    warntrace($(esc(fcall)), $(map(esc, fargs)...); $(map(esc, args)...))
+    tracewarns($(esc(fcall)), $(map(esc, fargs)...); $(map(esc, args)...))
   end
 end
