@@ -44,6 +44,8 @@ Run Traceur on `fun`, and throw an error if any warnings occur inside functions
 tagged with `@should_not_warn` or specified in `nowarn`.
 """
 macro check(ex, args...)
+  @assert ex.head === :call "`@check` should be called with a function call."
+
   fcall = ex.args[1]
   fargs = ex.args[2:end]
   quote
