@@ -3,13 +3,12 @@ using InteractiveUtils
 
 struct Trace
   seen::Set
-  stack::Vector{Call}
   warn
   maxdepth::Int
 end
 
 function Trace(w; maxdepth=typemax(Int))
-  Trace(Set(), Vector{Call}(), w, maxdepth)
+  Trace(Set(), w, maxdepth)
 end
 
 struct TraceurCtx
