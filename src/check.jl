@@ -21,22 +21,19 @@ end
 Run Traceur on `f`, and throw an error if any warnings occur inside functions
 tagged with `@should_not_warn`.
 """
-function check(f; nowarn=Any[], kwargs...)
-  failed = false
-  wp = warning_printer()
-  result = trace(f; kwargs...) do warning
-    ix = findfirst(warning.stack) do call
-      call.f in should_not_warn || call.f in nowarn
-    end
-    if ix != nothing
-      tagged_function = warning.stack[ix].f
-      message = "$(warning.message) (called from $(tagged_function))"
-      warning = Warning(warning.call, warning.line, message, warning.stack)
-      wp(warning)
-      failed = true
+function check(fcall, fargs...; nowarn=Any[], kwargs...)
+  warningscnt = 0
+  warningprinter = warning_printer()
+  result = trace(fcall, fargs...; kwargs...) do warning
+    f = warning.call.f
+    if f in should_not_warn || f in nowarn
+      message = "$(warning.message) (called from $(f))"
+      warning = Warning(warning.call, warning.line, message)
+      warningprinter(warning)
+      warningscnt += 1
     end
   end
-  @assert !failed "One or more warnings occured inside functions tagged with `@should_not_warn`"
+  @assert warningscnt === 0 "$(warningscnt) warnings occured inside functions tagged with `@should_not_warn`"
   result
 end
 
@@ -46,8 +43,10 @@ end
 Run Traceur on `fun`, and throw an error if any warnings occur inside functions
 tagged with `@should_not_warn` or specified in `nowarn`.
 """
-macro check(expr, args...)
+macro check(ex, args...)
+  fcall = ex.args[1]
+  fargs = ex.args[2:end]
   quote
-      check(() -> $(esc(expr)); $(map(esc, args)...))
-    end
+    check($(esc(fcall)), $(map(esc, fargs)...); $(map(esc, args)...))
+  end
 end
