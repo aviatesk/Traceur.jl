@@ -1,4 +1,5 @@
 using Vinyl: @overdub, @hook
+import JuliaInterpreter
 using InteractiveUtils
 
 struct Trace
@@ -17,8 +18,9 @@ end
 
 isprimitive(f) = f isa Core.Builtin || f isa Core.IntrinsicFunction
 
-const ignored_methods = Set([@which((1,2)[1])])
+const ignored_modules = Set([Core, Core.Compiler, JuliaInterpreter, JuliaInterpreter.CompiledCalls])
 const ignored_functions = Set([getproperty, setproperty!])
+const ignored_methods = Set([@which((1,2)[1])])
 
 dispatch_type(f, args...) = typeof.((f, args))
 
@@ -26,7 +28,7 @@ should_analyse(tra::Trace, C::DynamicCall) = begin
   f = C.f
   T = dispatch_type(f, C.a)
 
-  T ∉ tra.seen && f ∉ ignored_functions && !isprimitive(f) && method(C) ∉ ignored_methods && method(C).module ∉ (Core, Core.Compiler)
+  T ∉ tra.seen && !isprimitive(f) && method(C).module ∉ ignored_modules && f ∉ ignored_functions && method(C) ∉ ignored_methods
 end
 
 @hook ctx::TraceurCtx (fcall::Any)(fargs...) = begin

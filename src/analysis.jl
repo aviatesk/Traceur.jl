@@ -1,9 +1,6 @@
 abstract type Call end
 
-method_expr(f, Ts::Type{<:Tuple}) =
-  :($f($([:(::$T) for T in Ts.parameters]...)))
-
-function loc(c::Call)
+loc(c::Call) = begin
   meth = method(c)
   "$(meth.file):$(meth.line)"
 end
@@ -13,19 +10,17 @@ struct DynamicCall{F,A} <: Call
   a::A
   DynamicCall{F,A}(f,a...) where {F,A} = new(f, a)
 end
-
 DynamicCall(f, a...) = DynamicCall{typeof(f),typeof(a)}(f, a...)
 
 argtypes(c::DynamicCall) = Base.typesof(c.a...)
 types(c::DynamicCall) = (typeof(c.f), argtypes(c).parameters...)
-method(c::DynamicCall) = which(c.f, argtypes(c))
-method_expr(c::DynamicCall) = method_expr(c.f, argtypes(c))
-
-function code(c::DynamicCall; optimize = false)
+method(c::DynamicCall)::Method = which(c.f, argtypes(c))
+method_expr(f, Ts::Type{<:Tuple}) = :($f($([:(::$T) for T in Ts.parameters]...)))
+method_expr(c::DynamicCall)::Expr = method_expr(c.f, argtypes(c))
+code(c::DynamicCall; optimize = false) = begin
   codeinfo = code_typed(c.f, argtypes(c), optimize = optimize)
   @assert length(codeinfo) == 1
-  codeinfo = codeinfo[1]
-  return codeinfo
+  codeinfo[1]
 end
 
 # struct StaticCall <: Call
