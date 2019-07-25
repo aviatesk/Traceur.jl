@@ -16,10 +16,14 @@ macro should_not_warn(expr)
 end
 
 """
-    check(f::Function)
+    check(fcall::Function, fargs...; [nowarn], [kwargs...])
 
-Run Traceur on `f`, and throw an error if any warnings occur inside functions
-tagged with `@should_not_warn`.
+Run Traceur on `fcall` with its arguments `(fargs...)`, and throw an error if any
+warnings occur inside functions tagged with `@should_not_warn` or specified in `nowarn`.
+
+Optional arguments:
+- `nowarn` specifies functions that are not allowed to cause warnings. (Default: `[]`)
+- `kwargs...` can be all the keyword arguments that [@trace](@ref) accepts.
 """
 function check(fcall, fargs...; nowarn=Any[], kwargs...)
   warningscnt = 0
@@ -38,10 +42,14 @@ function check(fcall, fargs...; nowarn=Any[], kwargs...)
 end
 
 """
-    @check fun(args...) nowarn=[] maxdepth=typemax(Int)
+    @check f(args...) [nowarn] [kwargs...]
 
-Run Traceur on `fun`, and throw an error if any warnings occur inside functions
+Run Traceur on `f`, and throw an error if any warnings occur inside functions
 tagged with `@should_not_warn` or specified in `nowarn`.
+
+Optional arguments:
+- `nowarn` specifies functions that are not allowed to cause warnings. (Default: `[]`)
+- `kwargs...` can be all the keyword arguments that [@trace](@ref) accepts.
 """
 macro check(ex, args...)
   @assert ex.head === :call "`@check` should be called with a function call."

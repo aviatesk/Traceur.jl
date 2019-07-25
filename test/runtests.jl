@@ -74,26 +74,26 @@ my_stable_add_undecorated(y) = my_add(y)
     @test isempty(ws)
   end
 
-  @testset "depth-limited traces" begin
-    ws = @warnings naive_sum_wrapper(rand(3)) maxdepth = 0
-    @test length(ws) == 1
-    @test warns_for(ws, "returns")
-
-    ws = @warnings naive_sum_wrapper(rand(3)) maxdepth = 1
-    @test length(ws) == 4
-    @test warns_for(ws, "assigned", "returns")
-  end
+  # @testset "depth-limited traces" begin
+  #   ws = @warnings naive_sum_wrapper(rand(3)) maxdepth = 0
+  #   @test length(ws) == 1
+  #   @test warns_for(ws, "returns")
+  #
+  #   ws = @warnings naive_sum_wrapper(rand(3)) maxdepth = 1
+  #   @test length(ws) == 4
+  #   @test warns_for(ws, "assigned", "returns")
+  # end
 
   @testset "module-specific traces" begin
-    ws = @warnings Foo.naive_sum_wrapper(rand(3)) maxdepth = 2 modules=[Foo]
+    ws = @warnings Foo.naive_sum_wrapper(rand(3)) modules=[Foo]
     @test length(ws) == 1
     @test warns_for(ws, "returns")
 
-    ws = @warnings Foo.naive_sum_wrapper(rand(3)) maxdepth = 2 modules=[Foo.Bar]
+    ws = @warnings Foo.naive_sum_wrapper(rand(3)) modules=[Foo.Bar]
     @test length(ws) == 3
     @test warns_for(ws, "assigned", "returns")
 
-    ws = @warnings Foo.naive_sum_wrapper(rand(3)) maxdepth = 2 modules=[Foo, Foo.Bar]
+    ws = @warnings Foo.naive_sum_wrapper(rand(3)) modules=[Foo, Foo.Bar]
     @test length(ws) == 4
     @test warns_for(ws, "assigned", "returns")
   end
