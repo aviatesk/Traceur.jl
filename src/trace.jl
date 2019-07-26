@@ -17,7 +17,8 @@ end
 
 isprimitive(f) = f isa Core.Builtin || f isa Core.IntrinsicFunction
 
-const ignored_modules = Set([Core, Core.Compiler, JuliaInterpreter, JuliaInterpreter.CompiledCalls])
+# @NOTE: `ignored_modules` should be `Tuple`, `∉` condition check would fail otherwise
+const ignored_modules = (Core, Core.Compiler, JuliaInterpreter, JuliaInterpreter.CompiledCalls)
 const ignored_functions = Set([getproperty, setproperty!])
 const ignored_methods = Set([@which((1,2)[1])])
 
