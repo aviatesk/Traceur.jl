@@ -40,12 +40,10 @@ end
 #   return codeinfo
 # end
 
-function eachline(f, code, line = -1)
+function eachline(f, code)
   for (i, l) in enumerate(code.code)
     ind = code.codelocs[i]
-    1 <= ind <=  length(code.linetable) ?
-      line = code.linetable[ind].line :
-      line = -1
+    line = 1 <= ind <=  length(code.linetable) ? code.linetable[ind].line : -1
     f(line, l)
   end
 end
@@ -115,10 +113,10 @@ end
 
 # local variables
 
-function assignments(code, l = -1)
+function assignments(code)
   assigns = Dict()
   idx = 0
-  eachline(code, l) do line, ex
+  eachline(code) do line, ex
     idx += 1
     (isexpr(ex, :(=)) && isexpr(ex.args[1], Core.SlotNumber)) || return
     typ = Core.Compiler.widenconst(code.ssavaluetypes[idx])
