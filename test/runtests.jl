@@ -47,43 +47,45 @@ end
 @should_not_warn my_stable_add(y) = my_add(y)
 my_stable_add_undecorated(y) = my_add(y)
 
-@testset "Traceur" begin
-  ws = Traceur.warnings(() -> naive_relu(1))
-  @test isempty(ws)
+@time @testset "Traceur" begin
+  @testset "basic traces" begin
+    ws = Traceur.warnings(() -> naive_relu(1))
+    @test isempty(ws)
 
-  ws = Traceur.warnings(() -> naive_relu(1.0))
-  @test warns_for(ws, "returns")
-
-  ws = Traceur.warnings(() -> randone())
-  @test warns_for(ws, "returns")
-
-  ws = Traceur.warnings(() -> naive_sum([1]))
-  @test isempty(ws)
-
-  ws = Traceur.warnings(() -> naive_sum([1.0]))
-  @test warns_for(ws, "assigned", "returns")
-
-  ws = Traceur.warnings(() -> f(1))
-  @test warns_for(ws, "global", "dispatch", "returns")
-
-  ws = Traceur.warnings(() -> f2(1))
-  @test warns_for(ws, "global", "dispatch", "returns")
-
-  ws = Traceur.warnings(() -> g(1))
-  @test isempty(ws)
-
-  @testset "depth limiting" begin
-    ws = Traceur.warnings(() -> naive_sum_wrapper(rand(3)); maxdepth = 0)
-    @test length(ws) == 1
+    ws = Traceur.warnings(() -> naive_relu(1.0))
     @test warns_for(ws, "returns")
 
-    ws = Traceur.warnings(() -> naive_sum_wrapper(rand(3)); maxdepth = 1)
-    @test length(ws) == 4
+    ws = Traceur.warnings(() -> randone())
+    @test warns_for(ws, "returns")
+
+    ws = Traceur.warnings(() -> naive_sum([1]))
+    @test isempty(ws)
+
+    ws = Traceur.warnings(() -> naive_sum([1.0]))
     @test warns_for(ws, "assigned", "returns")
+
+    ws = Traceur.warnings(() -> f(1))
+    @test warns_for(ws, "global", "dispatch", "returns")
+
+    ws = Traceur.warnings(() -> f2(1))
+    @test warns_for(ws, "global", "dispatch", "returns")
+
+    ws = Traceur.warnings(() -> g(1))
+    @test isempty(ws)
   end
 
-  @testset "module specific" begin
-    ws = Traceur.warnings(() -> Foo.naive_sum_wrapper(rand(3)); maxdepth = 2, modules=[Foo])
+  # @testset "depth-limited traces" begin
+  #   ws = @warnings naive_sum_wrapper(rand(3)) maxdepth = 0
+  #   @test length(ws) == 1
+  #   @test warns_for(ws, "returns")
+  #
+  #   ws = @warnings naive_sum_wrapper(rand(3)) maxdepth = 1
+  #   @test length(ws) == 4
+  #   @test warns_for(ws, "assigned", "returns")
+  # end
+
+  @testset "module-specific traces" begin
+    ws = Traceur.warnings(() -> Foo.naive_sum_wrapper(rand(3)); modules=[Foo])
     @test length(ws) == 1
     @test warns_for(ws, "returns")
 
